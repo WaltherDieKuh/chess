@@ -67,6 +67,18 @@ int main()
         return -1;
     }
 
+    unsigned int VBO, VAO;
+    glGenBuffers(1, &VBO);
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO); // bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s)
+    glBindBuffer(GL_ARRAY_BUFFER, VBO); // bind the Vertex Buffer Object
+    // copy vertices array in a buffer for OpenGL to use
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0); // enable the vertex attribute at index 0
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);  
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glViewport(0, 0, 1000, 800);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     
@@ -97,8 +109,23 @@ int main()
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLogFragment << std::endl;
     }
 
+    unsigned int shaderProgram;
+    shaderProgram = glCreateProgram();  
+
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
     
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
     
+    // copy vertices array in a buffer for OpenGL to use
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
     while(!glfwWindowShouldClose(window))
     {
 
@@ -108,12 +135,11 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        unsigned int VBO;
-        glGenBuffers(1, &VBO);  
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);  
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glUseProgram(shaderProgram);
 
-        
+        glBindVertexArray(VAO); // bind the Vertex Array Object before drawing
+
+        glDrawArrays(GL_TRIANGLES, 0, 3); // draw the triangle
 
         glfwSwapBuffers(window);
         glfwPollEvents();
