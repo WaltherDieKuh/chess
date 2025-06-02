@@ -1,34 +1,31 @@
 #pragma once
 #include <glad/glad.h>
+#include "texture.h"
+#include <memory>
 
 enum class TileColor { WHITE, BLACK };
 enum class PieceType { NONE, PAWN, ROOK, KNIGHT, BISHOP, QUEEN, KING };
+enum class PieceColor { WHITE, BLACK };
 
 class Tile {
 private:
-    int boardX, boardY;           // Schachbrett-Koordinaten (0-7)
+    int boardX, boardY;
     TileColor color;
     PieceType piece;
+    PieceColor pieceColor;
     bool isSelected;
+    std::shared_ptr<Texture> pieceTexture;
 
 public:
     Tile(int x, int y, TileColor color);
     
-    // Getters
-    int getBoardX() const { return boardX; }
-    int getBoardY() const { return boardY; }
-    TileColor getColor() const { return color; }
-    PieceType getPiece() const { return piece; }
-    bool getSelected() const { return isSelected; }
-    
-    // Setters
-    void setPiece(PieceType piece) { this->piece = piece; }
-    void setSelected(bool selected) { isSelected = selected; }
+    // Figuren-Verwaltung
+    void setPiece(PieceType piece, PieceColor color, std::shared_ptr<Texture> texture);
+    void removePiece();
     
     // Rendering
     void drawTile(unsigned int shaderProgram, unsigned int VAO) const;
     
-    // Koordinaten-Konvertierung (Schachbrett -> OpenGL)
     float getWorldX() const;
     float getWorldY() const;
 };

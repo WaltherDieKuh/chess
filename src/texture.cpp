@@ -1,5 +1,6 @@
 #include "texture.h"
 #include <iostream>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -8,7 +9,9 @@ Texture::Texture() : textureID(0), width(0), height(0), channels(0) {
 }
 
 Texture::~Texture() {
-    glDeleteTextures(1, &textureID);
+    if (textureID != 0) {
+        glDeleteTextures(1, &textureID);
+    }
 }
 
 bool Texture::loadFromFile(const std::string& filepath) {
@@ -16,6 +19,7 @@ bool Texture::loadFromFile(const std::string& filepath) {
     
     unsigned char* data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
     if (!data) {
+        std::cout << "STB Error: " << stbi_failure_reason() << std::endl;
         std::cout << "Failed to load texture: " << filepath << std::endl;
         return false;
     }
@@ -35,6 +39,7 @@ bool Texture::loadFromFile(const std::string& filepath) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
     stbi_image_free(data);
+    std::cout << "Successfully loaded: " << filepath << " (" << width << "x" << height << ", " << channels << " channels)" << std::endl;
     return true;
 }
 

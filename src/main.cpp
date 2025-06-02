@@ -1,38 +1,60 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "board.h"  // ChessBoard-Header hinzufügen
+#include "board.h"
+#include "piece_manager.h"
 
-using namespace std; 
+using namespace std;
+
+// Verschiedene Testpositionen
+const std::string START_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
+    "layout (location = 1) in vec2 aTexCoord;\n"
     "uniform float aspectRatio;\n"
     "uniform vec2 tilePosition;\n"
+    "out vec2 TexCoord;\n"
     "void main()\n"
     "{\n"
-    "   vec3 pos = aPos * 0.25 + vec3(tilePosition, 0.0);\n"  // 0.25 statt 0.125
+    "   vec3 pos = aPos * 0.25 + vec3(tilePosition, 0.0);\n"
     "   if(aspectRatio > 1.0)\n"
     "       pos.x /= aspectRatio;\n"
     "   else\n"
     "       pos.y *= aspectRatio;\n"
     "   gl_Position = vec4(pos, 1.0);\n"
+    "   TexCoord = aTexCoord;\n"
     "}\0";
 
 const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
     "uniform vec3 tileColor;\n"
+    "uniform sampler2D pieceTexture;\n"
+    "uniform bool hasPiece;\n"
+    "in vec2 TexCoord;\n"
     "void main()\n"
     "{\n"
-    "   FragColor = vec4(tileColor, 1.0);\n"
+    "   vec4 baseColor = vec4(tileColor, 1.0);\n"  // Tile-Farbe als Basis
+    "   \n"
+    "   if (hasPiece) {\n"
+    "       vec4 texColor = texture(pieceTexture, TexCoord);\n"
+    "       if (texColor.a > 0.1) {\n"  // Wenn Figur nicht transparent
+    "           FragColor = texColor;\n"  // Zeige Figur
+    "       } else {\n"
+    "           FragColor = baseColor;\n"  // Zeige Tile-Farbe durch Transparenz
+    "       }\n"
+    "   } else {\n"
+    "       FragColor = baseColor;\n"  // Nur Tile-Farbe
+    "   }\n"
     "}\0";
 
 
 float vertices[] = {
-    -0.5f, -0.5f, 0.0f,  // unten links  (Index 0)
-     0.5f, -0.5f, 0.0f,  // unten rechts (Index 1)
-     0.5f,  0.5f, 0.0f,  // oben rechts  (Index 2)
-    -0.5f,  0.5f, 0.0f   // oben links   (Index 3)
+    // Position        // Textur-Koordinaten
+    -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,  // unten links
+     0.5f, -0.5f, 0.0f,  1.0f, 0.0f,  // unten rechts
+     0.5f,  0.5f, 0.0f,  1.0f, 1.0f,  // oben rechts
+    -0.5f,  0.5f, 0.0f,  0.0f, 1.0f   // oben links
 };
 
 unsigned int indices[] = {
@@ -92,8 +114,11 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // Textur-Koordinaten
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glViewport(0, 0, 1000, 800);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -135,8 +160,27 @@ int main()
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    // ChessBoard erstellen
+    // PieceManager erstellen und Texturen laden
+    PieceManager pieceManager;
+    if (!pieceManager.loadTextures("assets")) {
+        std::cout << "Failed to load piece textures!" << std::endl;
+        return -1;
+    }
+
+    // ChessBoard erstellen und Figuren platzieren
     ChessBoard chessBoard;
+    
+    // Verschiedene Positionen testen (ändern Sie hier die Position)
+    chessBoard.setupFromFEN(START_POSITION, pieceManager);
+    // chessBoard.setupFromFEN(SICILIAN_DEFENSE, pieceManager);
+    // chessBoard.setupFromFEN(QUEENS_GAMBIT, pieceManager);
+    // chessBoard.setupFromFEN(ENDGAME_POSITION, pieceManager);
+    
+    cout << "Current FEN: " << chessBoard.getCurrentFEN() << endl;
+    
+    // Enable blending für Transparenz
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     while(!glfwWindowShouldClose(window))
     {

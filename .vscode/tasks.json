@@ -13,7 +13,10 @@
                 "${workspaceFolder}/src/main.cpp",
                 "${workspaceFolder}/src/tile.cpp",
                 "${workspaceFolder}/src/board.cpp",
+                "${workspaceFolder}/src/piece_manager.cpp",
                 "${workspaceFolder}/src/glad.c",
+                "${workspaceFolder}/src/texture.cpp",
+                "${workspaceFolder}/src/fen_parser.cpp",
                 "-lglfw3dll",
                 "-o",
                 "${workspaceFolder}/cutable.exe"
