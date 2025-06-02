@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "chess",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"iostream": "cpp"
+		}
+	}
+}
