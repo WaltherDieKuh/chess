@@ -17,17 +17,29 @@ void Tile::removePiece() {
 }
 
 void Tile::drawTile(unsigned int shaderProgram, unsigned int VAO) const {
+    drawTile(shaderProgram, VAO, false, false);  // Call overloaded version
+}
+
+void Tile::drawTile(unsigned int shaderProgram, unsigned int VAO, bool selected, bool highlighted) const {
     // Setze Tile-Position als Uniform
     int posLocation = glGetUniformLocation(shaderProgram, "tilePosition");
     glUniform2f(posLocation, getWorldX(), getWorldY());
     
-    // Setze Tile-Farbe (wird immer als Hintergrund verwendet)
-    int colorLocation = glGetUniformLocation(shaderProgram, "tileColor");
-    if (color == TileColor::WHITE) {
-        glUniform3f(colorLocation, 0.9f, 0.9f, 0.8f); // Helles beige
+    // Bestimme Tile-Farbe (mit Highlights)
+    float r, g, b;
+    if (selected) {
+        r = 1.0f; g = 1.0f; b = 0.0f; // Gelb für ausgewähltes Tile
+    } else if (highlighted) {
+        r = 0.0f; g = 1.0f; b = 0.0f; // Grün für gehovertes Tile
+    } else if (color == TileColor::WHITE) {
+        r = 0.9f; g = 0.9f; b = 0.8f; // Helles beige
     } else {
-        glUniform3f(colorLocation, 0.4f, 0.2f, 0.1f); // Dunkles braun
+        r = 0.4f; g = 0.2f; b = 0.1f; // Dunkles braun
     }
+    
+    // Setze Tile-Farbe
+    int colorLocation = glGetUniformLocation(shaderProgram, "tileColor");
+    glUniform3f(colorLocation, r, g, b);
     
     // Setze hasPiece Uniform
     int hasPieceLocation = glGetUniformLocation(shaderProgram, "hasPiece");
@@ -41,6 +53,7 @@ void Tile::drawTile(unsigned int shaderProgram, unsigned int VAO) const {
         glUniform1i(textureLocation, 0);
     }
     
+    // Zeichne das Tile
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

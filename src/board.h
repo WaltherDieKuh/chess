@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 
+class MouseHandler; // Forward declaration
+
 class ChessBoard {
 private:
     std::vector<std::vector<std::unique_ptr<Tile>>> board;
@@ -16,10 +18,11 @@ public:
     void initializeBoard();
     void setupFromFEN(const std::string& fen, PieceManager& pieceManager);
     void setupInitialPieces(PieceManager& pieceManager);
-    void drawBoard(unsigned int shaderProgram, unsigned int VAO) const;
+    void setPosition(const std::string& fen, PieceManager& pieceManager);  // Remove duplicate
+    void drawBoard(unsigned int shaderProgram, unsigned int VAO) const;  // Original method
+    void drawBoard(unsigned int shaderProgram, unsigned int VAO, const MouseHandler& mouseHandler) const;  // New method
     Tile* getTile(int x, int y) const;
     
     // FEN-Funktionen
     std::string getCurrentFEN() const { return currentFEN; }
-    void setPosition(const std::string& fen, PieceManager& pieceManager);
 };

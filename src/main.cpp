@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include "board.h"
 #include "piece_manager.h"
+#include "mouse_handler.h"
 
 using namespace std;
 
@@ -72,6 +73,21 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+// Globale Variablen für Callbacks
+MouseHandler* g_mouseHandler = nullptr;
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    if (g_mouseHandler) {
+        g_mouseHandler->handleMouseButton(window, button, action, mods);
+    }
+}
+
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (g_mouseHandler) {
+        g_mouseHandler->handleMouseMove(window, xpos, ypos);
+    }
 }
 
 int main()
@@ -182,8 +198,15 @@ int main()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    while(!glfwWindowShouldClose(window))
-    {
+    // Mouse Handler erstellen
+    MouseHandler mouseHandler(&chessBoard, &pieceManager);
+    g_mouseHandler = &mouseHandler;
+    
+    // Mouse Callbacks registrieren
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
+    
+    while(!glfwWindowShouldClose(window)) {
         processInput(window);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -198,13 +221,13 @@ int main()
         int aspectLocation = glGetUniformLocation(shaderProgram, "aspectRatio");
         glUniform1f(aspectLocation, aspectRatio);
 
-        // Schachbrett zeichnen
-        chessBoard.drawBoard(shaderProgram, VAO);
+        // Schachbrett mit Mouse Handler zeichnen
+        chessBoard.drawBoard(shaderProgram, VAO, mouseHandler);  // Correct call
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
+    
     // Cleanup
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
