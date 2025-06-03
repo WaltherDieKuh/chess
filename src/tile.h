@@ -26,7 +26,7 @@ public:
     
     // Rendering
     void drawTile(unsigned int shaderProgram, unsigned int VAO) const;
-    void drawTile(unsigned int shaderProgram, unsigned int VAO, bool selected, bool highlighted) const;
+    void drawTile(unsigned int shaderProgram, unsigned int VAO, bool selected, bool hovered, bool isValidMoveTarget) const;
     
     // Getters
     int getBoardX() const { return boardX; }
@@ -37,9 +37,6 @@ public:
     std::shared_ptr<Texture> getPieceTexture() const { return pieceTexture; }
     
     // Setters
-    void setSelected(bool selected) { isSelected = selected; }
-    void setHighlighted(bool highlighted) { isHighlighted = highlighted; }
-    
     float getWorldX() const;
     float getWorldY() const;
 };

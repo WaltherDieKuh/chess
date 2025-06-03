@@ -66,13 +66,24 @@ void ChessBoard::drawBoard(unsigned int shaderProgram, unsigned int VAO) const {
 void ChessBoard::drawBoard(unsigned int shaderProgram, unsigned int VAO, const MouseHandler& mouseHandler) const {
     auto [selectedX, selectedY] = mouseHandler.getSelected();
     auto [hoveredX, hoveredY] = mouseHandler.getHovered();
+    const auto& validMoves = mouseHandler.getValidMoveHighlights(); // Hole die Liste der gültigen Züge
     
     for (int x = 0; x < 8; ++x) {
         for (int y = 0; y < 8; ++y) {
-            bool isSelected = (x == selectedX && y == selectedY);
-            bool isHighlighted = (x == hoveredX && y == hoveredY);
+            bool isSelectedTile = (x == selectedX && y == selectedY);
+            bool isHoveredTile = (x == hoveredX && y == hoveredY);
             
-            board[x][y]->drawTile(shaderProgram, VAO, isSelected, isHighlighted);
+            bool isPossibleMoveTarget = false;
+            if (selectedX != -1) { // Nur wenn eine Figur ausgewählt ist, zeige mögliche Züge
+                for (const auto& move : validMoves) {
+                    if (move.first == x && move.second == y) {
+                        isPossibleMoveTarget = true;
+                        break;
+                    }
+                }
+            }
+            
+            board[x][y]->drawTile(shaderProgram, VAO, isSelectedTile, isHoveredTile, isPossibleMoveTarget);
         }
     }
 }

@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include "board.h"
 #include "piece_manager.h"
+#include <vector> // Hinzufügen für std::vector
+#include <utility> // Hinzufügen für std::pair
 
 class MouseHandler {
 private:
@@ -17,6 +19,7 @@ private:
     // Für Highlight
     int hoveredX, hoveredY;
     int selectedX, selectedY;
+    std::vector<std::pair<int, int>> currentValidMoves; // Hinzufügen
 
 public:
     MouseHandler(ChessBoard* board, PieceManager* manager);
@@ -36,4 +39,5 @@ public:
     std::pair<int, int> getDragStart() const { return {dragStartX, dragStartY}; }
     std::pair<int, int> getSelected() const { return {selectedX, selectedY}; }
     std::pair<int, int> getHovered() const { return {hoveredX, hoveredY}; }
+    const std::vector<std::pair<int, int>>& getValidMoveHighlights() const; // Hinzufügen
 };

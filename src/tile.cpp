@@ -17,20 +17,21 @@ void Tile::removePiece() {
 }
 
 void Tile::drawTile(unsigned int shaderProgram, unsigned int VAO) const {
-    drawTile(shaderProgram, VAO, false, false);  // Call overloaded version
+    // Rufe die erweiterte Version mit Standardwerten für die neuen Parameter auf
+    drawTile(shaderProgram, VAO, false, false, false);
 }
 
-void Tile::drawTile(unsigned int shaderProgram, unsigned int VAO, bool selected, bool highlighted) const {
+void Tile::drawTile(unsigned int shaderProgram, unsigned int VAO, bool selected, bool hovered, bool isValidMoveTarget) const {
     // Setze Tile-Position als Uniform
     int posLocation = glGetUniformLocation(shaderProgram, "tilePosition");
     glUniform2f(posLocation, getWorldX(), getWorldY());
     
-    // Bestimme Tile-Farbe (mit Highlights)
+    // Bestimme Tile-Farbe (mit Highlights für Auswahl/Hover)
     float r, g, b;
-    if (selected) {
-        r = 1.0f; g = 1.0f; b = 0.0f; // Gelb für ausgewähltes Tile
-    } else if (highlighted) {
-        r = 0.0f; g = 1.0f; b = 0.0f; // Grün für gehovertes Tile
+    if (selected) { // Das Feld, auf dem die ausgewählte Figur steht
+        r = 0.6f; g = 0.6f; b = 0.2f; // Ein etwas anderes Gelb für die Auswahl der Figur
+    } else if (hovered) { // Das Feld, über dem die Maus schwebt
+        r = 0.2f; g = 0.5f; b = 0.2f; // Ein leichtes Grün für Hover
     } else if (color == TileColor::WHITE) {
         r = 0.9f; g = 0.9f; b = 0.8f; // Helles beige
     } else {
@@ -43,17 +44,19 @@ void Tile::drawTile(unsigned int shaderProgram, unsigned int VAO, bool selected,
     
     // Setze hasPiece Uniform
     int hasPieceLocation = glGetUniformLocation(shaderProgram, "hasPiece");
-    bool hasPiece = (piece != PieceType::NONE && pieceTexture != nullptr);
-    glUniform1i(hasPieceLocation, hasPiece ? 1 : 0);
+    bool hasPieceOnTile = (piece != PieceType::NONE && pieceTexture != nullptr);
+    glUniform1i(hasPieceLocation, hasPieceOnTile ? 1 : 0);
     
-    if (hasPiece) {
-        // Binde Figuren-Textur
+    if (hasPieceOnTile) {
         pieceTexture->bind(0);
         int textureLocation = glGetUniformLocation(shaderProgram, "pieceTexture");
         glUniform1i(textureLocation, 0);
     }
+
+    // Setze Uniform für das Hervorheben möglicher Züge
+    int isPossibleMoveLocation = glGetUniformLocation(shaderProgram, "isPossibleMoveHighlight");
+    glUniform1i(isPossibleMoveLocation, isValidMoveTarget ? 1 : 0);
     
-    // Zeichne das Tile
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

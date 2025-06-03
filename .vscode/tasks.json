@@ -17,6 +17,7 @@
                 "${workspaceFolder}/src/mouse_handler.cpp",
                 "${workspaceFolder}/src/texture.cpp",
                 "${workspaceFolder}/src/fen_parser.cpp",
+                "${workspaceFolder}/src/move_logic.cpp",
                 "${workspaceFolder}/src/glad.c",
                 "-lglfw3dll",
                 "-o",

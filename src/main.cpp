@@ -29,24 +29,32 @@ const char *vertexShaderSource = "#version 330 core\n"
 
 const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
-    "uniform vec3 tileColor;\n"
+    "uniform vec3 tileColor; // Basisfarbe des Feldes (weiß/schwarz, ausgewählt, gehovert)\n"
     "uniform sampler2D pieceTexture;\n"
     "uniform bool hasPiece;\n"
+    "uniform bool isPossibleMoveHighlight; // True, wenn dieses Feld ein gültiges Zugziel ist\n"
     "in vec2 TexCoord;\n"
     "void main()\n"
     "{\n"
-    "   vec4 baseColor = vec4(tileColor, 1.0);\n"  // Tile-Farbe als Basis
+    "   vec4 output_color = vec4(tileColor, 1.0);\n" // Standardmäßig die Feldfarbe
     "   \n"
     "   if (hasPiece) {\n"
-    "       vec4 texColor = texture(pieceTexture, TexCoord);\n"
-    "       if (texColor.a > 0.1) {\n"  // Wenn Figur nicht transparent
-    "           FragColor = texColor;\n"  // Zeige Figur
-    "       } else {\n"
-    "           FragColor = baseColor;\n"  // Zeige Tile-Farbe durch Transparenz
+    "       vec4 piece_tex_color = texture(pieceTexture, TexCoord);\n"
+    "       if (piece_tex_color.a > 0.1) {\n" // Wenn die Figur an diesem Texel sichtbar ist
+    "           output_color = piece_tex_color;\n" // Nutze die Farbe der Figur
     "       }\n"
-    "   } else {\n"
-    "       FragColor = baseColor;\n"  // Nur Tile-Farbe
     "   }\n"
+    "   \n"
+    "   if (isPossibleMoveHighlight) {\n"
+    "       float dist_to_center = distance(TexCoord, vec2(0.5, 0.5));\n"
+    "       float dot_radius = 0.15; // Radius des Punktes (0.0 bis 0.5, da TexCoord von 0-1 geht)\n"
+    "       if (dist_to_center < dot_radius) {\n"
+    "           // Farbe des Punktes. Die OpenGL Blend-Funktion kümmert sich um die Transparenz.\n"
+    "           output_color = vec4(1.0, 1.0, 1.0, 0.1);\n"
+    "       }\n"
+    "   }\n"
+    "   \n"
+    "   FragColor = output_color;\n"
     "}\0";
 
 

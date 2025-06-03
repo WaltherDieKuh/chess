@@ -1,12 +1,13 @@
 #include "mouse_handler.h"
 #include <iostream>
 #include <cmath>
+#include "move_logic.h"
 
 MouseHandler::MouseHandler(ChessBoard* board, PieceManager* manager)
     : chessBoard(board), pieceManager(manager), isDragging(false),
       dragStartX(-1), dragStartY(-1), dragEndX(-1), dragEndY(-1),
       mouseX(0), mouseY(0), hoveredX(-1), hoveredY(-1),
-      selectedX(-1), selectedY(-1) {}
+      selectedX(-1), selectedY(-1) {} // currentValidMoves wird standardmäßig leer initialisiert
 
 void MouseHandler::handleMouseButton(GLFWwindow* window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
@@ -98,11 +99,6 @@ std::pair<int, int> MouseHandler::screenToBoard(double mouseX, double mouseY, in
     int boardX = static_cast<int>((ndcX - visualBoardLeft) / ndcTileSizeX);
     int boardY = static_cast<int>((ndcY - visualBoardBottom) / ndcTileSizeY);
 
-    // Ihre Spiellogik (z.B. chessBoard->getTile) könnte (0,0) als obere linke Ecke erwarten.
-    // Wenn boardY=0 die unterste Reihe ist und boardY=7 die oberste (wie es diese Berechnung ergibt),
-    // und Ihre Logik es andersherum braucht, invertieren Sie boardY:
-    // boardY = 7 - boardY; // Bei Bedarf einkommentieren
-
     // Debug-Ausgabe
     static int lastX = -1, lastY = -1;
     if ((boardX != lastX || boardY != lastY) && boardX >= 0 && boardX < 8 && boardY >= 0 && boardY < 8) {
@@ -128,7 +124,16 @@ void MouseHandler::startDrag(int x, int y) {
     isDragging = true;
     dragStartX = x;
     dragStartY = y;
-    std::cout << "Started dragging piece from (" << x << ", " << y << ")" << std::endl;
+    selectedX = x; // selectedX/Y auch hier setzen, falls nicht schon in handleMouseButton
+    selectedY = y;
+
+    currentValidMoves = MoveLogic::getValidMoves(x, y, *chessBoard); // Speichere gültige Züge
+    if (currentValidMoves.empty()) {
+        std::cout << "No valid moves for piece at (" << x << ", " << y << ")" << std::endl;
+        // cancelDrag(); // Nicht unbedingt canceln, Auswahl bleibt bestehen, aber keine Highlights
+        // return; // Nicht return, damit selectedX/Y gesetzt bleiben
+    }
+    std::cout << "Started dragging piece from (" << x << ", " << y << "). Valid moves: " << currentValidMoves.size() << std::endl;
 }
 
 void MouseHandler::endDrag(int x, int y) {
@@ -137,34 +142,42 @@ void MouseHandler::endDrag(int x, int y) {
     dragEndX = x;
     dragEndY = y;
     
-    // Führe den Zug aus
-    if (dragStartX != dragEndX || dragStartY != dragEndY) {
+    bool moveWasValid = false;
+    for (const auto& move : currentValidMoves) {
+        if (move.first == dragEndX && move.second == dragEndY) {
+            moveWasValid = true;
+            break;
+        }
+    }
+
+    if (moveWasValid && (dragStartX != dragEndX || dragStartY != dragEndY)) {
         Tile* fromTile = chessBoard->getTile(dragStartX, dragStartY);
         Tile* toTile = chessBoard->getTile(dragEndX, dragEndY);
         
         if (fromTile && toTile) {
-            // Figur bewegen
             PieceType piece = fromTile->getPiece();
             PieceColor color = fromTile->getPieceColor();
             auto texture = fromTile->getPieceTexture();
             
-            // Setze Figur auf Zielfeld
             toTile->setPiece(piece, color, texture);
-            
-            // Entferne Figur vom Startfeld
             fromTile->removePiece();
             
             std::cout << "Moved piece from (" << dragStartX << ", " << dragStartY 
                       << ") to (" << dragEndX << ", " << dragEndY << ")" << std::endl;
         }
+    } else if (dragStartX == dragEndX && dragStartY == dragEndY) {
+        // Klick auf dasselbe Feld, Auswahl aufheben oder andere Logik
+        std::cout << "Clicked same tile, drag cancelled essentially." << std::endl;
+    } else {
+        std::cout << "Invalid move to (" << dragEndX << ", " << dragEndY << ")" << std::endl;
     }
     
-    // Reset drag state
     isDragging = false;
     selectedX = -1;
     selectedY = -1;
     dragStartX = -1;
     dragStartY = -1;
+    currentValidMoves.clear(); // Gültige Züge zurücksetzen
 }
 
 void MouseHandler::cancelDrag() {
@@ -173,4 +186,9 @@ void MouseHandler::cancelDrag() {
     selectedY = -1;
     dragStartX = -1;
     dragStartY = -1;
+    currentValidMoves.clear(); // Gültige Züge zurücksetzen
+}
+
+const std::vector<std::pair<int, int>>& MouseHandler::getValidMoveHighlights() const {
+    return currentValidMoves;
 }

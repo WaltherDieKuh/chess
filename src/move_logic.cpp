@@ -68,8 +68,6 @@ std::vector<std::pair<int, int>> getValidMoves(
             break;
         }
         case PieceType::ROOK:
-            // Implementieren Sie hier die Zuglogik für den Turm
-            // (horizontal und vertikal, bis blockiert oder Brettende)
 
             for (int i = 1; i < 8; ++i) {
                 // Nach oben
