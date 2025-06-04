@@ -69,7 +69,7 @@ std::vector<std::pair<int, int>> getValidMoves(
         }
         case PieceType::ROOK:
 
-            for (int i = 1; i < 8; ++i) {
+            for (int i = 1; i < 8-startY; ++i) {
                 // Nach oben
                 if (startY + i < 8) {
                     const Tile* targetTile = board.getTile(startX, startY + i);
@@ -84,6 +84,9 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < startY+1; ++i) {
                 // Nach unten
                 if (startY - i >= 0) {
                     const Tile* targetTile = board.getTile(startX, startY - i);
@@ -98,6 +101,9 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < startX+1; ++i) {
                 // Nach links
                 if (startX - i >= 0) {
                     const Tile* targetTile = board.getTile(startX - i, startY);
@@ -112,6 +118,9 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < 8-startX; ++i) {
                 // Nach rechts
                 if (startX + i < 8) {
                     const Tile* targetTile = board.getTile(startX + i, startY);
@@ -198,6 +207,9 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < 8; ++i) {
                 // Nach oben rechts
                 if (startX + i < 8 && startY + i < 8) {
                     const Tile* targetTile = board.getTile(startX + i, startY + i);
@@ -212,6 +224,9 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < 8; ++i) {
                 // Nach unten links
                 if (startX - i >= 0 && startY - i >= 0) {
                     const Tile* targetTile = board.getTile(startX - i, startY - i);
@@ -226,6 +241,9 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < 8; ++i) {
                 // Nach unten rechts
                 if (startX + i < 8 && startY - i >= 0) {
                     const Tile* targetTile = board.getTile(startX + i, startY - i);
@@ -246,8 +264,8 @@ std::vector<std::pair<int, int>> getValidMoves(
             break;
         case PieceType::QUEEN:
             
-            for(int i = 1; i < 8; ++i) {
-                // Vertikale und horizontale Bewegungen (wie Turm)
+            for (int i = 1; i < 8-startY; ++i) {
+                // Nach oben
                 if (startY + i < 8) {
                     const Tile* targetTile = board.getTile(startX, startY + i);
                     if (targetTile) {
@@ -261,6 +279,10 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < startY+1; ++i) {
+                // Nach unten
                 if (startY - i >= 0) {
                     const Tile* targetTile = board.getTile(startX, startY - i);
                     if (targetTile) {
@@ -274,6 +296,10 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < startX+1; ++i) {
+                // Nach links
                 if (startX - i >= 0) {
                     const Tile* targetTile = board.getTile(startX - i, startY);
                     if (targetTile) {
@@ -287,6 +313,10 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < 8-startX; ++i) {
+                // Nach rechts
                 if (startX + i < 8) {
                     const Tile* targetTile = board.getTile(startX + i, startY);
                     if (targetTile) {
@@ -300,7 +330,10 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
-                // Diagonale Bewegungen (wie Läufer)
+            }
+            // Diagonale Bewegungen (wie Läufer)
+            // Nach oben links
+            for (int i = 1; i < 8; ++i) {
                 // Nach oben links
                 if (startX - i >= 0 && startY + i < 8) {
                     const Tile* targetTile = board.getTile(startX - i, startY + i);
@@ -315,6 +348,9 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < 8; ++i) {
                 // Nach oben rechts
                 if (startX + i < 8 && startY + i < 8) {
                     const Tile* targetTile = board.getTile(startX + i, startY + i);
@@ -329,6 +365,9 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+
+            for (int i = 1; i < 8; ++i) {
                 // Nach unten links
                 if (startX - i >= 0 && startY - i >= 0) {
                     const Tile* targetTile = board.getTile(startX - i, startY - i);
@@ -343,6 +382,9 @@ std::vector<std::pair<int, int>> getValidMoves(
                         }
                     }
                 }
+            }
+            
+            for (int i = 1; i < 8; ++i) {
                 // Nach unten rechts
                 if (startX + i < 8 && startY - i >= 0) {
                     const Tile* targetTile = board.getTile(startX + i, startY - i);
